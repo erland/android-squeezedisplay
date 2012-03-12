@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+    <EditTextPreference android:key="server"
+                        android:title="@string/server_title" android:summary="@string/server_summary"/>
+    <ListPreference android:key="player"
+                    android:title="@string/player_title" android:summary="@string/player_summary"/>
+    <CheckBoxPreference android:key="debug"
+                        android:title="@string/debug_title" android:summary="@string/debug_summary"/>
+</PreferenceScreen>

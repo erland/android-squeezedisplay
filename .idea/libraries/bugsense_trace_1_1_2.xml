@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="bugsense-trace-1-1-2">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/libs/bugsense-trace-1-1-2.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
