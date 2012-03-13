@@ -42,7 +42,7 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
         SharedPreferences sharedPrefs = PreferenceManager.getDefaultSharedPreferences(this);
         debug = sharedPrefs.getBoolean("debug", false);
         setContentView(R.layout.main);
-        new SimpleEula(this).show();
+        //new SimpleEula(this).show();
 
         BugSenseHandler.setup(this, "e85d57cc");
 
