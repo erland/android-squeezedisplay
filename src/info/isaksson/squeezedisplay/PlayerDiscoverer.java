@@ -115,6 +115,7 @@ public class PlayerDiscoverer {
                         }
                     }
                 }
+                /*
                 if (msg.has("sn_players_loop")) {
                     JsonNode otherPlayerNodes = msg.get("sn_players_loop");
                     for (JsonNode player : otherPlayerNodes) {
@@ -123,6 +124,7 @@ public class PlayerDiscoverer {
                         playerManager.registerPlayer(new Player(id, name));
                     }
                 }
+                */
             }
             client.getChannel("/" + client.getId() + "/slim/serverstatus").unsubscribe();
         }
