@@ -95,6 +95,8 @@ public class TrackMonitor {
 
     public static interface TrackListener {
         void currentTrackChanged(PlayerDiscoverer.Player player, Track track);
+
+        void playbackStopped(PlayerDiscoverer.Player player);
     }
 
     private static class PlayerMessageListener implements ClientSessionChannel.MessageListener {
@@ -117,7 +119,7 @@ public class TrackMonitor {
             } catch (IOException e) {
                 e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
             }
-            if (msg != null && msg.has("playlist_loop")) {
+            if (msg != null && msg.get("mode").getTextValue().equals("play") && msg.has("playlist_loop")) {
                 JsonNode tracks = msg.get("playlist_loop");
                 if (tracks.size() > 0) {
                     JsonNode jsonTrack = tracks.get(0);
@@ -154,6 +156,8 @@ public class TrackMonitor {
                 } else {
                     trackListener.currentTrackChanged(player, null);
                 }
+            } else if (msg != null && !msg.get("mode").getTextValue().equals("play")) {
+                trackListener.playbackStopped(player);
             }
         }
     }

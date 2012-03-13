@@ -84,9 +84,7 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
         });
 
         String player = sharedPrefs.getString("player", null);
-        if (player != null) {
-            setupViewForPlayer(player);
-        }
+        setupViewForPlayer(player);
         sharedPrefs.registerOnSharedPreferenceChangeListener(this);
     }
 
@@ -168,6 +166,30 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
     private TrackMonitor.Track currentTrack = null;
     private int currentArtistImage = 0;
     private Timer nextImageTimer = null;
+
+    @Override
+    public void playbackStopped(final PlayerDiscoverer.Player player) {
+        if (this.player != null && this.player.id.equals(player.id)) {
+            if (nextImageTimer != null) {
+                nextImageTimer.cancel();
+            }
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    TextView artistView = (TextView) findViewById(R.id.artist);
+                    artistView.setText(" ");
+                    TextView albumView = (TextView) findViewById(R.id.album);
+                    albumView.setText(player.name);
+                    TextView trackView = (TextView) findViewById(R.id.track);
+                    trackView.setText("Stopped/Paused");
+                    ImageView imageView = (ImageView) findViewById(R.id.image);
+                    imageView.setImageDrawable(null);
+                    View creditView = findViewById(R.id.credit);
+                    creditView.setVisibility(View.INVISIBLE);
+                }
+            });
+        }
+    }
 
     @Override
     public void currentTrackChanged(final PlayerDiscoverer.Player player, final TrackMonitor.Track track) {
