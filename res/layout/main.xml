@@ -28,7 +28,8 @@
             android:id="@+id/credit"
             android:layout_width="fill_parent"
             android:layout_height="23dp"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:visibility="invisible">
         <TextView
                 android:id="@+id/status"
                 android:layout_alignParentLeft="true"
