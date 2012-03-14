@@ -1,5 +1,6 @@
 package info.isaksson.squeezedisplay;
 
+import android.util.Log;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.cometd.bayeux.Channel;
@@ -9,6 +10,9 @@ import org.cometd.client.BayeuxClient;
 import org.cometd.client.transport.ClientTransport;
 import org.cometd.client.transport.LongPollingTransport;
 import org.eclipse.jetty.client.HttpClient;
+import org.eclipse.jetty.client.HttpDestination;
+import org.eclipse.jetty.client.security.Realm;
+import org.eclipse.jetty.client.security.RealmResolver;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -18,6 +22,10 @@ import java.util.*;
 public class PlayerDiscoverer {
     public static interface PlayerManager {
         void registerPlayer(Player player);
+
+        void discoveryFinished(String serverPort);
+
+        void discoveryFailed(String serverPort);
     }
 
     static class Player {
@@ -38,10 +46,17 @@ public class PlayerDiscoverer {
     }
 
     public static void discoverPlayers(final String serverPort, final PlayerManager playerManager) {
-        HttpClient httpClient = new HttpClient();
+        final HttpClient httpClient = new HttpClient();
         try {
             httpClient.start();
-
+            httpClient.setRealmResolver(new RealmResolver() {
+                @Override
+                public Realm getRealm(String realm, HttpDestination httpDestination, String contextPath) throws IOException {
+                    // Just return null for now as we don't support password protected servers yet
+                    httpClient.setRealmResolver(null);
+                    throw new IOException("Server authentication not supported");
+                }
+            });
             Map<String, Object> options = new HashMap<String, Object>();
             ClientTransport transport = LongPollingTransport.create(options, httpClient);
 
@@ -62,14 +77,19 @@ public class PlayerDiscoverer {
                         requestResponse.put("request", request);
                         requestResponse.put("response", "/" + client.getId() + "/slim/serverstatus");
                         client.getChannel("/slim/subscribe").publish(requestResponse);
+                    } else {
+                        client.getChannel(Channel.META_HANDSHAKE).removeListener(this);
+                        playerManager.discoveryFailed(serverPort);
                     }
                 }
             });
             client.handshake();
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Log.e(PlayerDiscoverer.class.getName(), "Player discovery interrupted");
+            playerManager.discoveryFailed(serverPort);
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Log.e(PlayerDiscoverer.class.getName(), "Player discovery failure", e);
+            playerManager.discoveryFailed(serverPort);
         }
     }
 
@@ -92,7 +112,7 @@ public class PlayerDiscoverer {
                 msg = new ObjectMapper().readTree(message.getJSON());
                 msg = msg.get("data");
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                Log.e(PlayerDiscoverer.class.getName(), "Failure when reading serverstatus response", e);
             }
             if (msg != null) {
                 JsonNode playerNodes = msg.get("players_loop");
@@ -111,7 +131,8 @@ public class PlayerDiscoverer {
                             URL url = new URL(serverUrl);
                             playerManager.registerPlayer(new Player(id, name, url.getHost() + ":" + url.getPort()));
                         } catch (MalformedURLException e) {
-                            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            // This should never happen
+                            Log.w(PlayerDiscoverer.class.getName(), "Incorrect server url received, skipping: " + serverUrl);
                         }
                     }
                 }
@@ -127,6 +148,7 @@ public class PlayerDiscoverer {
                 */
             }
             client.getChannel("/" + client.getId() + "/slim/serverstatus").unsubscribe();
+            playerManager.discoveryFinished(serverPort);
         }
     }
 }

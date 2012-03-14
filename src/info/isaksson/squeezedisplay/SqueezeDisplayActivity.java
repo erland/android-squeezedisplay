@@ -10,6 +10,7 @@ import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.*;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -35,6 +36,8 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
     Integer height;
     Boolean debug = false;
     private static final Object syncObject = new Object();
+    private List<String> serverDiscoveryInProgress = Collections.synchronizedList(new ArrayList<String>());
+    private List<String> serverDiscoveryFailed = Collections.synchronizedList(new ArrayList<String>());
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -132,10 +135,49 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
     }
 
     @Override
+    public void discoveryFinished() {
+        handleFinishedDiscovery();
+    }
+
+    @Override
     public void registerServer(ServerDiscoverer.Server server) {
         servers.add(server);
         if (player == null) {
             detectPlayer(server.getIpAddress() + ":" + server.getPort());
+        }
+    }
+
+    @Override
+    public void discoveryFailed(String serverPort) {
+        serverDiscoveryInProgress.remove(serverPort);
+        serverDiscoveryFailed.add(serverPort);
+        handleFinishedDiscovery();
+    }
+
+    @Override
+    public void discoveryFinished(String serverPort) {
+        serverDiscoveryInProgress.remove(serverPort);
+        handleFinishedDiscovery();
+    }
+
+    private void handleFinishedDiscovery() {
+        if (player == null && serverDiscoveryInProgress.size() == 0) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    ImageView imageView = (ImageView) findViewById(R.id.image);
+                    if (imageView.getDrawable() != null) {
+                        imageView.setAnimation(null);
+                        imageView.setImageDrawable(null);
+                    }
+                    TextView artistView = (TextView) findViewById(R.id.artist);
+                    artistView.setText(" ");
+                    TextView albumView = (TextView) findViewById(R.id.album);
+                    albumView.setText(" ");
+                    TextView trackView = (TextView) findViewById(R.id.track);
+                    trackView.setText("No players found");
+                }
+            });
         }
     }
 
@@ -236,11 +278,11 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
                             }
                         }
                     } catch (MalformedURLException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        Log.w(SqueezeDisplayActivity.class.getName(), "Invalid url when connecting to LastFM", e);
                     } catch (JsonProcessingException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        Log.w(SqueezeDisplayActivity.class.getName(), "Error when processing answer from LastFM", e);
                     } catch (IOException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                        Log.w(SqueezeDisplayActivity.class.getName(), "Error when retrieving data from LastFM", e);
                     }
                 }
                 if (track != null && this.images.size() == 0 && track.getCover() != null) {
@@ -493,21 +535,24 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
 
     private void detectPlayer(String serverPort) {
         if (player == null) {
+            serverDiscoveryInProgress.add(serverPort);
             PlayerDiscoverer.discoverPlayers(serverPort, this);
         }
     }
 
     public void detectServers() {
-        try {
-            servers.clear();
-            ServerDiscoverer.start(getBroadcastAddress(), this);
-        } catch (IOException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-        }
+        servers.clear();
+        serverDiscoveryInProgress.clear();
+        serverDiscoveryFailed.clear();
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String serverPort = sharedPreferences.getString("server", null);
         if (serverPort != null && serverPort.trim().length() > 0) {
             detectPlayer(serverPort);
+        }
+        try {
+            ServerDiscoverer.start(getBroadcastAddress(), this);
+        } catch (IOException e) {
+            Log.e(SqueezeDisplayActivity.class.getName(), "Failed to initiate server discovery", e);
         }
     }
 

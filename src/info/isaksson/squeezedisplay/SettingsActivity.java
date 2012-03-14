@@ -92,6 +92,18 @@ public class SettingsActivity extends PreferenceActivity implements
         fillPlayerList(serverPort);
     }
 
+    @Override
+    public void discoveryFinished(String serverPort) {
+    }
+
+    @Override
+    public void discoveryFailed(String serverPort) {
+    }
+
+    @Override
+    public void discoveryFinished() {
+    }
+
     public void fillServerList() {
         try {
             servers.clear();

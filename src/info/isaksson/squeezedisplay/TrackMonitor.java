@@ -1,5 +1,6 @@
 package info.isaksson.squeezedisplay;
 
+import android.util.Log;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
 import org.cometd.bayeux.Channel;
@@ -57,9 +58,9 @@ public class TrackMonitor {
             });
             client.handshake();
         } catch (InterruptedException e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Log.w(PlayerDiscoverer.class.getName(), "Track monitoring interrupted");
         } catch (Exception e) {
-            e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            Log.w(PlayerDiscoverer.class.getName(), "Track monitoring failure", e);
         }
     }
 
@@ -117,7 +118,7 @@ public class TrackMonitor {
                 msg = new ObjectMapper().readTree(message.getJSON());
                 msg = msg.get("data");
             } catch (IOException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                Log.w(TrackMonitor.class.getName(), "Failure when reading playerstatus response", e);
             }
             if (msg != null && msg.get("mode").getTextValue().equals("play") && msg.has("playlist_loop")) {
                 JsonNode tracks = msg.get("playlist_loop");

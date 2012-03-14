@@ -1,5 +1,7 @@
 package info.isaksson.squeezedisplay;
 
+import android.util.Log;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -10,6 +12,8 @@ public class ServerDiscoverer {
 
     public static interface ServerManager {
         void registerServer(Server server);
+
+        void discoveryFinished();
     }
 
     public static class Server {
@@ -44,7 +48,8 @@ public class ServerDiscoverer {
             try {
                 discoveryThread.join();
             } catch (InterruptedException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                // If it's interrupted we handle it the same way as if it's finished
+                Log.d(ServerDiscoverer.class.getName(), "Interrupted discovery");
             }
             discoveryThread = null;
         }
@@ -56,7 +61,7 @@ public class ServerDiscoverer {
                     socket = sendDiscoveryRequest(broadcastAddress);
                     listenForResponses(socket, serverManager);
                 } catch (IOException e) {
-                    e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                    Log.e(ServerDiscoverer.class.getName(), "Failure when discover servers", e);
                 } finally {
                     if (socket != null) {
                         socket.close();
@@ -121,6 +126,7 @@ public class ServerDiscoverer {
             }
         } catch (SocketTimeoutException e) {
             // No more servers, let's return to caller
+            serverManager.discoveryFinished();
         }
     }
 }
