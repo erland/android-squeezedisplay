@@ -267,7 +267,9 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
                                     Integer width = Integer.valueOf(image.get("sizes").get("size").get(0).get("width").getTextValue());
                                     Integer height = Integer.valueOf(image.get("sizes").get("size").get(0).get("height").getTextValue());
                                     if (this.width / 4 < width || this.height / 4 < height) {
-                                        this.images.add(imageURL);
+                                        if (!imageURL.matches(".*(?:www\\.7digital\\.com|keep.?stats?.?clean|lastfmclean).*")) {
+                                            this.images.add(imageURL);
+                                        }
                                     }
                                 }
                             } else if (images != null) {
@@ -275,7 +277,9 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
                                 Integer width = Integer.valueOf(images.get("sizes").get("size").get(0).get("width").getTextValue());
                                 Integer height = Integer.valueOf(images.get("sizes").get("size").get(0).get("height").getTextValue());
                                 if (this.width / 4 < width || this.height / 4 < height) {
-                                    this.images.add(imageURL);
+                                    if (!imageURL.matches(".*(?:www\\.7digital\\.com|keep.?stats?.?clean|lastfmclean).*")) {
+                                        this.images.add(imageURL);
+                                    }
                                 }
                             }
                         }
