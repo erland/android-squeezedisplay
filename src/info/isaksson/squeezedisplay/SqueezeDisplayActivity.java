@@ -312,6 +312,8 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
             }
             if (!albumView.getText().equals(currentTrack.getAlbum())) {
                 albumView.setText(currentTrack.getAlbum());
+                currentArtistImage = -1;
+                updated = true;
             }
         } else {
             trackView.setText(" ");
