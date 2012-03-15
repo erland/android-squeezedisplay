@@ -253,7 +253,9 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
                 }
                 if (track != null && track.getArtist() != null) {
                     try {
-                        URL imageUrl = new URL("http://ws.audioscrobbler.com/2.0/?method=artist.getimages&artist=" + URLEncoder.encode(track.getArtist(), "utf-8") + "&format=json&api_key=" + API_KEY);
+                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+                        String order = sharedPreferences.getString("ordering", "dateadded");
+                        URL imageUrl = new URL("http://ws.audioscrobbler.com/2.0/?method=artist.getimages&artist=" + URLEncoder.encode(track.getArtist(), "utf-8") + "&order=" + order + "&limit=100&format=json&api_key=" + API_KEY);
                         URLConnection connection = imageUrl.openConnection();
                         connection.setRequestProperty("User-Agent", "SqueezeDisplay/1.0");
                         JsonNode json = new ObjectMapper().readTree(connection.getInputStream());
@@ -320,7 +322,7 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
     }
 
     private void setNextImage() {
-        String image;
+        String image = null;
         synchronized (syncObject) {
             if (currentArtistImage < 0) {
                 currentArtistImage = (int) (images.size() * Math.random());
@@ -329,9 +331,13 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
             if (currentArtistImage >= images.size()) {
                 currentArtistImage = 0;
             }
-            image = images.get(currentArtistImage);
+            if (images.size() > 0) {
+                image = images.get(currentArtistImage);
+            }
         }
-        new ImageRetrieveTask(width, height, image, player).execute();
+        if (image != null) {
+            new ImageRetrieveTask(width, height, image, player).execute();
+        }
     }
 
     private class ImageRetrieveTask extends AsyncTask<Void, Void, Drawable> {

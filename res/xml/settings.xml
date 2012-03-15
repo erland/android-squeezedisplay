@@ -5,6 +5,11 @@
                         android:title="@string/server_title" android:summary="@string/server_summary"/>
     <ListPreference android:key="player"
                     android:title="@string/player_title" android:summary="@string/player_summary"/>
+    <ListPreference android:key="ordering"
+                    android:title="@string/ordering_title" android:summary="@string/ordering_summary"
+                    android:entries="@array/orderingOptions"
+                    android:entryValues="@array/orderingOptionValues"
+                    android:defaultValue="lastadded"/>
     <CheckBoxPreference android:key="debug"
                         android:title="@string/debug_title" android:summary="@string/debug_summary"/>
 </PreferenceScreen>

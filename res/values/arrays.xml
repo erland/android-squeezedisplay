@@ -1,0 +1,10 @@
+<resources>
+    <string-array name="orderingOptions">
+        <item>Last Added</item>
+        <item>Popularity</item>
+    </string-array>
+    <string-array name="orderingOptionValues">
+        <item>lastadded</item>
+        <item>popularity</item>
+    </string-array>
+</resources>

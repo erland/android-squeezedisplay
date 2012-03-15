@@ -124,4 +124,6 @@
         that The Company will still be allowed to apply for injunctive remedies (or an equivalent type of urgent legal
         relief) in any jurisdiction.
     </string>
+    <string name="ordering_title">Image sorting</string>
+    <string name="ordering_summary">Image sorting</string>
 </resources>
