@@ -279,6 +279,7 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
                                 }
                             }
                         }
+                        Collections.shuffle(this.images);
                     } catch (MalformedURLException e) {
                         Log.w(SqueezeDisplayActivity.class.getName(), "Invalid url when connecting to LastFM", e);
                     } catch (JsonProcessingException e) {
