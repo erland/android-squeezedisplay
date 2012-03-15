@@ -113,7 +113,10 @@ public class SettingsActivity extends PreferenceActivity implements
         }
     }
 
-    private void fillPlayerList(final String serverPort) {
+    private void fillPlayerList(String serverPort) {
+        if (!serverPort.contains(":")) {
+            serverPort += ":9000";
+        }
         PlayerDiscoverer.discoverPlayers(serverPort, this);
     }
 

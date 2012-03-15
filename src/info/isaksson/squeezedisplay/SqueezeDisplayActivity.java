@@ -562,6 +562,9 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         String serverPort = sharedPreferences.getString("server", null);
         if (serverPort != null && serverPort.trim().length() > 0) {
+            if (!serverPort.contains(":")) {
+                serverPort += ":9000";
+            }
             detectPlayer(serverPort);
         }
         try {
