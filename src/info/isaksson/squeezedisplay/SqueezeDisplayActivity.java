@@ -324,15 +324,21 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
     private void setNextImage() {
         String image = null;
         synchronized (syncObject) {
+            boolean useAlbumCover = false;
             if (currentArtistImage < 0) {
                 currentArtistImage = (int) (images.size() * Math.random());
+                if (currentTrack != null && currentTrack.getCover() != null) {
+                    useAlbumCover = true;
+                }
             }
             currentArtistImage++;
             if (currentArtistImage >= images.size()) {
                 currentArtistImage = 0;
             }
-            if (images.size() > 0) {
+            if (images.size() > 0 && !useAlbumCover) {
                 image = images.get(currentArtistImage);
+            } else if (useAlbumCover) {
+                image = "http://" + player.serverPort + "/music/" + currentTrack.getCover() + "/cover";
             }
         }
         if (image != null) {
