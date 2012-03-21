@@ -43,6 +43,19 @@ public class PlayerDiscoverer {
             this.id = id;
             this.name = name;
         }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Player)) {
+                return false;
+            }
+            return id.equals(((Player) o).id);
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
+        }
     }
 
     public static void discoverPlayers(final String serverPort, final PlayerManager playerManager) {

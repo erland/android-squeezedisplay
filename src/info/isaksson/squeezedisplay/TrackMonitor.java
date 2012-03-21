@@ -38,11 +38,18 @@ public class TrackMonitor {
 
             final BayeuxClient client = new BayeuxClient("http://" + player.serverPort + "/cometd", transport);
             playerClients.put(player, client);
+            client.getChannel(Channel.META_CONNECT).addListener(new ClientSessionChannel.MessageListener() {
+                @Override
+                public void onMessage(ClientSessionChannel clientSessionChannel, Message message) {
+                    if (!message.isSuccessful()) {
+                        trackListener.currentTrackChanged(player, null);
+                    }
+                }
+            });
             client.getChannel(Channel.META_HANDSHAKE).addListener(new ClientSessionChannel.MessageListener() {
                 @Override
                 public void onMessage(ClientSessionChannel clientSessionChannel, Message message) {
                     if (message.isSuccessful()) {
-                        client.getChannel(Channel.META_HANDSHAKE).removeListener(this);
                         ClientSessionChannel.MessageListener playerListener = new PlayerMessageListener(client, player, trackListener);
 
                         client.getChannel("/" + client.getId() + "/slim/playerstatus/" + player.id).subscribe(playerListener);
@@ -158,7 +165,7 @@ public class TrackMonitor {
                     trackListener.currentTrackChanged(player, null);
                 }
             } else if (msg != null && !msg.get("mode").getTextValue().equals("play")) {
-                trackListener.playbackStopped(player);
+                trackListener.currentTrackChanged(player, null);
             }
         }
     }

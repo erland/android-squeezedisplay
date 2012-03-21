@@ -321,9 +321,13 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
                 updated = true;
             }
         } else {
-            trackView.setText(" ");
             artistView.setText(" ");
-            albumView.setText(" ");
+            albumView.setText(player.name);
+            trackView.setText("Stopped/Paused");
+            ImageView imageView = (ImageView) findViewById(R.id.image);
+            imageView.setImageDrawable(null);
+            View creditView = findViewById(R.id.credit);
+            creditView.setVisibility(View.INVISIBLE);
         }
         return updated;
     }
@@ -513,7 +517,7 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
             @Override
             public void run() {
                 if (player != null) {
-                    if (images.size() == 0) {
+                    if (images.size() == 0 || currentTrack == null) {
                         updateTextItems();
                         ImageView imageView = (ImageView) findViewById(R.id.image);
                         imageView.setImageDrawable(null);
