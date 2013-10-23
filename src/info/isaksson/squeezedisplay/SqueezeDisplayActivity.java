@@ -241,7 +241,7 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
                     @Override
                     public void run() {
                         TextView statusView = (TextView) findViewById(R.id.status);
-                        statusView.setText("Changing image because of track changed...");
+                        statusView.setText("Changing image because of track changed " + (currentTrack.getArtist() != null ? currentTrack.getArtist() + " - " : "(no artist) - ") + (currentTrack.getAlbum() != null ? currentTrack.getAlbum() : "(no album)") + "...");
                     }
                 });
             }
@@ -253,34 +253,40 @@ public class SqueezeDisplayActivity extends Activity implements SharedPreference
                 }
                 if (track != null && track.getArtist() != null) {
                     try {
-                        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-                        String order = sharedPreferences.getString("ordering", "dateadded");
-                        URL imageUrl = new URL("http://ws.audioscrobbler.com/2.0/?method=artist.getimages&artist=" + URLEncoder.encode(track.getArtist(), "utf-8") + "&order=" + order + "&limit=100&format=json&api_key=" + API_KEY);
+                        URL imageUrl = new URL("http://ws.audioscrobbler.com/2.0/?method=artist.getInfo&artist=" + URLEncoder.encode(track.getArtist(), "utf-8") + "&format=json&api_key=" + API_KEY);
                         URLConnection connection = imageUrl.openConnection();
                         connection.setRequestProperty("User-Agent", "SqueezeDisplay/1.0");
                         JsonNode json = new ObjectMapper().readTree(connection.getInputStream());
-                        if (json.has("images")) {
-                            JsonNode images = json.get("images").get("image");
-                            if (images != null && images.isArray()) {
-                                for (JsonNode image : images) {
-                                    String imageURL = image.get("sizes").get("size").get(0).get("#text").getTextValue();
-                                    Integer width = Integer.valueOf(image.get("sizes").get("size").get(0).get("width").getTextValue());
-                                    Integer height = Integer.valueOf(image.get("sizes").get("size").get(0).get("height").getTextValue());
-                                    if (this.width / 4 < width || this.height / 4 < height) {
-                                        if (!imageURL.matches(".*(?:www\\.7digital\\.com|keep.?stats?.?clean|lastfmclean).*")) {
-                                            this.images.add(imageURL);
-                                        }
-                                    }
+                        if (json.has("artist") && json.get("artist").has("image")) {
+                            JsonNode images = json.get("artist").get("image");
+                            String imageURL = null;
+                            for (JsonNode image : images) {
+                                String url = image.get("#text").getTextValue();
+                                if (url != null && url.trim().length() > 0) {
+                                    imageURL = url;
                                 }
-                            } else if (images != null) {
-                                String imageURL = images.get("sizes").get("size").get(0).get("#text").getTextValue();
-                                Integer width = Integer.valueOf(images.get("sizes").get("size").get(0).get("width").getTextValue());
-                                Integer height = Integer.valueOf(images.get("sizes").get("size").get(0).get("height").getTextValue());
-                                if (this.width / 4 < width || this.height / 4 < height) {
-                                    if (!imageURL.matches(".*(?:www\\.7digital\\.com|keep.?stats?.?clean|lastfmclean).*")) {
-                                        this.images.add(imageURL);
-                                    }
+
+                            }
+                            if (!imageURL.matches(".*(?:www\\.7digital\\.com|keep.?stats?.?clean|lastfmclean).*")) {
+                                this.images.add(imageURL);
+                            }
+                        }
+                        imageUrl = new URL("http://ws.audioscrobbler.com/2.0/?method=album.getInfo&artist=" + URLEncoder.encode(track.getArtist(), "utf-8") + "&album=" + URLEncoder.encode(track.getAlbum(), "utf-8") + "&format=json&api_key=" + API_KEY);
+                        connection = imageUrl.openConnection();
+                        connection.setRequestProperty("User-Agent", "SqueezeDisplay/1.0");
+                        json = new ObjectMapper().readTree(connection.getInputStream());
+                        if (json.has("album") && json.get("album").has("image")) {
+                            JsonNode images = json.get("album").get("image");
+                            String imageURL = null;
+                            for (JsonNode image : images) {
+                                String url = image.get("#text").getTextValue();
+                                if (url != null && url.trim().length() > 0) {
+                                    imageURL = url;
                                 }
+
+                            }
+                            if (!imageURL.matches(".*(?:www\\.7digital\\.com|keep.?stats?.?clean|lastfmclean).*")) {
+                                this.images.add(imageURL);
                             }
                         }
                         Collections.shuffle(this.images);
